@@ -8,3 +8,7 @@ The youtube file then reads the links.txt, and will add those links to a playlis
 
 Requires Python >2.5, Python 3, PRAW (pip install praw), gdata-python-client(https://github.com/google/gdata-python-client), TSLite(http://trevp.net/tlslite/).
 Reddit script is run using Python3 and PRAw, youtube script is run using Python>2.5, gdata-client, and TSLite.
+
+In order to run these scripts, they need access to the respective account.
+For reddit, go to https://www.reddit.com/prefs/apps/ and click "create another app". You'll need the App ID and Secret.
+For youtube, go to https://console.developers.google.com. In the credentials tab, you'll need to create credentials for the script in the "credential" section, and fill out the "OAuth consent screen". In the overview tab, you'll need to enable the "Youtube Data API" and "Youtube Analytics API".

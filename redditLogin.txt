@@ -1,0 +1,6 @@
+username
+password
+app_id
+secret
+redirect_url
+user_agent
