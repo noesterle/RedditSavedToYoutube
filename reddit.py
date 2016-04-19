@@ -40,7 +40,7 @@ def runBot(r):
     try:
         authenticated_user = r.get_me() #get user
         #print (authenticated_user.name, authenticated_user.link_karma) #confirm user
-        saved = authenticated_user.get_saved() #get saved list.
+        saved = authenticated_user.get_saved()#limit=2) #get saved list.
         for x in saved:
             if isinstance(x,praw.objects.Submission):  #Checks to see if x is a submission
                 if 'youtu' in x.domain:   #Checks to see if x is from youtube.com or shortened link youtu.be
@@ -61,8 +61,9 @@ def runBot(r):
                 else:
                     #print(x.domain)
                     unknown.update({x.title:x.url})   #Link is from an unknown service.
+                    counterUnknown+=1
             countertotal+=1
-        #print("Looked through",countertotal,"items in the saved list.",counterUnknown,"were not recorded.")
+        print("Looked through",countertotal,"items in the saved list.",counterUnknown,"were not recorded.")
         #    print(dir(x))
         return youtube
     except Exception as err:
@@ -81,7 +82,7 @@ def writeLinks(dic):
             f.write(item+'~|'+dic[item]+'\n')
         f.close()
     except Exception as err:
-        print("Something went wrong writing")
+        print("Something went wrong writing the links to file.")
         print(err)
 
 def readCreds():
@@ -98,10 +99,24 @@ def readCreds():
         print("Something went wrong with reading credentials.")
         print(err)
 
+def readLinks():
+    try:
+        youtubeList={}
+        f = open('links.txt','r')
+        for line in f:
+            line=line.strip().split("~|")
+            youtubeList.update({line[0]:line[1]})
+        f.close()
+        return youtubeList
+    except Exception as err:
+        print("Something went wrong with reading the links.")
+        print(err)
+
 def main():
+    links = readLinks()
     login = readCreds()
     youtube = runBot(getPraw(login[0],login[1],login[2],login[3],login[4],login[5]))
-    #print(youtube)
+    youtube.update(links)
     writeLinks(youtube)
     
 main()
