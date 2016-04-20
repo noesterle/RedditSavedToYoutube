@@ -44,7 +44,23 @@ def youtubeLogin():
 
     youtube = build(YOUTUBE_API_SERVICE_NAME, YOUTUBE_API_VERSION,
         http=credentials.authorize(httplib2.Http()))
-    print(youtube)
+    return youtube
+
+def createPlaylist(youtube):
+    playlists_insert_response = youtube.playlists().insert(
+    part="snippet,status",
+        body=dict(
+            snippet=dict(
+                title="Test Playlist",
+                description="A private playlist created with the YouTube API v3"
+            ),
+            status=dict(
+                privacyStatus="private"
+            )
+        )
+    ).execute()
+
+    print("New playlist id: %s" % playlists_insert_response["id"])
 
 def read():
     links={}
@@ -60,7 +76,8 @@ def read():
 def main():
     #print(youtube)
     #print(youtubeGetAccessToken())
-    youtubeLogin()
+    youtube = youtubeLogin()
+    createPlaylist(youtube)
     links = read()
     #print(links)
     
