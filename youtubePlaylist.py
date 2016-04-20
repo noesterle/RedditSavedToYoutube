@@ -51,8 +51,8 @@ def createPlaylist(youtube):
     part="snippet,status",
         body=dict(
             snippet=dict(
-                title="Test Playlist",
-                description="A private playlist created with the YouTube API v3"
+                title="RedditSavedToYoutube",
+                description="Youtube videos found in your reddit saved posts."
             ),
             status=dict(
                 privacyStatus="private"
@@ -73,11 +73,21 @@ def read():
         links.update({str(arr[0]):str(arr[1])})
     return links
 
+def havePlaylist(youtube):
+    results = youtube.playlists().list(part='snippet',mine=True).execute()
+    for item in results['items']:
+        if item['snippet']['title'] == 'RedditSavedToYoutube':
+            return True
+    return False
+    print(results['items'])
+    
+
 def main():
     #print(youtube)
     #print(youtubeGetAccessToken())
     youtube = youtubeLogin()
-    createPlaylist(youtube)
+    print(havePlaylist(youtube))
+    #createPlaylist(youtube)
     links = read()
     #print(links)
     
