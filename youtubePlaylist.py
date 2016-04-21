@@ -83,32 +83,25 @@ def havePlaylist(youtube):
     
 def addVideo(youtube,playlistID):
     counter = 0
-    videoTitle='Animals - The House Of The Rising Sun [Rock]'
-    search_response = youtube.search().list(q=videoTitle,part='id,snippet',limit=1000).execute()
+    videoTitle='Animals - The House Of The Rising Sun (lyrics)'
+    videoAuthor='v94j'
+    search_response = youtube.search().list(q=videoTitle+" "+videoAuthor,part='id,snippet',type='video',maxResults=50).execute()
     for item in search_response['items']:
+        print(item['snippet']['title'])
         if item['snippet']['title'] == videoTitle:
             print("Found it!!")
             return
         counter+=1
     print("Didn't find it in",counter,'videos.')
-    """
-    print("SEARCH RESPONSE\n",search_response)
-    print()
-    print()
-    print("SEARCH RESPONSE ITEM\n",search_response['items'])
-    """
 
 def main():
     youtube = youtubeLogin()
     addVideo(youtube,'')
-    """
     playlistID = havePlaylist(youtube)
     if not playlistID:
         createPlaylist(youtube)
         playlistID = havePlaylist(youtube)
-    
     links = read()
-    """
     #print(links)
     
 main()

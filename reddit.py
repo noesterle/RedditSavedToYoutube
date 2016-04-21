@@ -40,11 +40,11 @@ def runBot(r):
     try:
         authenticated_user = r.get_me() #get user
         #print (authenticated_user.name, authenticated_user.link_karma) #confirm user
-        saved = authenticated_user.get_saved()#limit=2) #get saved list.
+        saved = authenticated_user.get_saved(limit=50)#limit=2) #get saved list.
         for x in saved:
             if isinstance(x,praw.objects.Submission):  #Checks to see if x is a submission
                 if 'youtu' in x.domain:   #Checks to see if x is from youtube.com or shortened link youtu.be
-                    youtube.update({x.title:x.url})
+                    youtube.update({x.media['oembed']['title']:x.url})
                     #x.unsave
                 elif 'imgur' in x.domain:   #Checks to see if x is from imgur
                     imgur.update({x.title:x.url})
