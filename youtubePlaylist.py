@@ -89,12 +89,12 @@ def havePlaylist(youtube):
     results = youtube.playlists().list(part='snippet',mine=True).execute()
     for item in results['items']:
         if item['snippet']['title'] == 'RedditSavedToYoutube':
-            return item['id']
+            return item['id'] #Playlist's unique id.
     return False
 
 def videosInPlaylist(youtube,playlistID):
     """
-    Finds all videos in the 'RedditSavedToYoutube' playlist. Trying to avoid duplicates.
+    Finds unique id of all videos in the 'RedditSavedToYoutube' playlist. Trying to avoid duplicates.
     """
     playlist_response = youtube.playlistItems().list(part='snippet',playlistId=playlistID,maxResults=50).execute()
     playlistVideoTitle = []
@@ -109,20 +109,20 @@ def addVideo(youtube,playlistID,videos):
     Trys to match the channel name and video title for each video.
     If the video is found, it is added to 'RedditSavedToYoutube' playlist.
     """
-    playlistVideos = videosInPlaylist(youtube,playlistID)
+    playlistVideos = videosInPlaylist(youtube,playlistID) #Unique id of vidoes in the playlist.
     for item in videos:
         videoTitle= item[0]
         videoAuthor=item[1]
-        search_response = youtube.search().list(q=videoTitle,part='id,snippet',type='video',maxResults=50).execute()
+        search_response = youtube.search().list(q=videoTitle,part='id,snippet',type='video',maxResults=50).execute() #Search youtube, up to 50 videos in response.
         for item in search_response['items']:
-            if item['snippet']['title'] == videoTitle and item['snippet']['channelTitle']==videoAuthor:
+            if item['snippet']['title'] == videoTitle and item['snippet']['channelTitle']==videoAuthor: #Check to see if this is the correct video.
                 videoID=item['id']['videoId']
                 kind=item['id']['kind']
                 channelID=item['snippet']['channelId']
-                if videoID not in playlistVideos:
+                if videoID not in playlistVideos: #If the video is not already in the playlist,
                     info={"snippet":{"playlistId":playlistID,"resourceId":{"channelId":channelID,"kind":kind,"videoId":videoID}}}
                     info2=json.dumps(info)
-                    response = youtube.playlistItems().insert(part='snippet',body=json.loads(info2)).execute()
+                    response = youtube.playlistItems().insert(part='snippet',body=json.loads(info2)).execute() #add it.
 
 def main():
     """
@@ -131,13 +131,20 @@ def main():
     Checks to see if 'RedditSavedToYoutube' playlist exists.
         Creates it, if not.
     Trys to add videos to playlist.
+    
+    Any errors will be written to err.txt.
     """
-    youtube = youtubeLogin()
-    videos = read()
-    playlistID = havePlaylist(youtube)
-    if not playlistID:
-        createPlaylist(youtube)
+    try:
+        youtube = youtubeLogin()
+        videos = read()
         playlistID = havePlaylist(youtube)
-    addVideo(youtube,playlistID,videos)
+        if not playlistID:
+            createPlaylist(youtube)
+            playlistID = havePlaylist(youtube)
+        addVideo(youtube,playlistID,videos)
+    except Exception as err:
+        f = open('err.txt','a')
+        f.write('Something went wrong.\n',err)
+        f.close()
 
 main()
