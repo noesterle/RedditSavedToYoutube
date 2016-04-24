@@ -63,15 +63,12 @@ def createPlaylist(youtube):
     print("New playlist id: %s" % playlists_insert_response["id"])
 
 def read():
-    links={}
+    videos=[]
     f=open('links.txt','r')
     for line in f:
-        arr = line.strip().split("~|")
-        #print(arr)
-        #print(arr[0],len(arr[0]))
-        #print(arr[1],len(arr[1]))
-        links.update({str(arr[0]):str(arr[1])})
-    return links
+        line = line.strip().split("~|")
+        videos.append(line)
+    return videos #2D array  [[title,channel_name,link]]
 
 def havePlaylist(youtube):
     results = youtube.playlists().list(part='snippet',mine=True).execute()
@@ -79,29 +76,27 @@ def havePlaylist(youtube):
         if item['snippet']['title'] == 'RedditSavedToYoutube':
             return item['id']
     return False
-    print(results['items'])
     
-def addVideo(youtube,playlistID):
+def addVideo(youtube,playlistID,videos):
     counter = 0
-    videoTitle='Animals - The House Of The Rising Sun (lyrics)'
-    videoAuthor='v94j'
-    search_response = youtube.search().list(q=videoTitle+" "+videoAuthor,part='id,snippet',type='video',maxResults=50).execute()
-    for item in search_response['items']:
-        print(item['snippet']['title'])
-        if item['snippet']['title'] == videoTitle:
-            print("Found it!!")
-            return
-        counter+=1
-    print("Didn't find it in",counter,'videos.')
+    for item in videos:
+        videoTitle= item[0]
+        videoAuthor=item[1]
+        print(videoTitle,'by',videoAuthor)
+        search_response = youtube.search().list(q=videoTitle,part='id,snippet',type='video',maxResults=50).execute()
+        for item in search_response['items']:
+            if item['snippet']['title'] == videoTitle and item['snippet']['channelTitle']==videoAuthor:
+                print("Found it!!")
+                counter+=1
+    print("Found",counter,'of',len(videos),'videos.')
 
 def main():
     youtube = youtubeLogin()
-    addVideo(youtube,'')
+    videos = read()
+    addVideo(youtube,'',videos)
     playlistID = havePlaylist(youtube)
-    if not playlistID:
-        createPlaylist(youtube)
-        playlistID = havePlaylist(youtube)
-    links = read()
-    #print(links)
+    #if not playlistID:
+    #    createPlaylist(youtube)
+    #    playlistID = havePlaylist(youtube)
     
 main()
