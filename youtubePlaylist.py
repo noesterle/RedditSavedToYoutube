@@ -7,6 +7,7 @@ from apiclient.errors import HttpError
 from oauth2client.client import flow_from_clientsecrets
 from oauth2client.file import Storage
 from oauth2client.tools import argparser, run_flow
+import json
 
 #Youtube info. May need spaces before and after clientid and secret. Not sure yet.
 CLIENT_SECRETS_FILE = "client_secrets.json"
@@ -86,8 +87,17 @@ def addVideo(youtube,playlistID,videos):
         search_response = youtube.search().list(q=videoTitle,part='id,snippet',type='video',maxResults=50).execute()
         for item in search_response['items']:
             if item['snippet']['title'] == videoTitle and item['snippet']['channelTitle']==videoAuthor:
-                print("Found it!!")
+                print("Found it!!",item['id']['videoId'])
+                videoID=item['id']['videoId']
+                kind=item['id']['kind']
+                channelID=item['snippet']['channelId']
+                print(videoID,kind,channelID)
                 counter+=1
+                #print(item)
+                #info=item['snippet']
+                info={'snippet':{'playlistId':playlistID,'resourceId':{'channelId':channelID,'kind':kind,'videoId':videoID}}}
+                #youtube.playlists().insert(part='snippet',request=info)
+                input()
     print("Found",counter,'of',len(videos),'videos.')
 
 def main():
@@ -95,6 +105,7 @@ def main():
     videos = read()
     addVideo(youtube,'',videos)
     playlistID = havePlaylist(youtube)
+    print(playlistID)
     #if not playlistID:
     #    createPlaylist(youtube)
     #    playlistID = havePlaylist(youtube)
