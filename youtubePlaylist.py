@@ -28,6 +28,9 @@ https://developers.google.com/api-client-library/python/guide/aaa_client_secrets
                                    CLIENT_SECRETS_FILE))
 
 def youtubeLogin():
+    """
+    Logs into youtube using Oauth2, credentials are stored in the client_secrets.json file.
+    """
     YOUTUBE_READ_WRITE_SCOPE = "https://www.googleapis.com/auth/youtube"
     YOUTUBE_API_SERVICE_NAME = 'youtube'
     YOUTUBE_API_VERSION = "v3"
@@ -48,22 +51,29 @@ def youtubeLogin():
     return youtube
 
 def createPlaylist(youtube):
+    """
+    If there is no playlist titled 'RedditSavedToYoutube', one is created for you.
+    """
     playlists_insert_response = youtube.playlists().insert(
     part="snippet,status",
         body=dict(
             snippet=dict(
-                title="RedditSavedToYoutube",
-                description="Youtube videos found in your reddit saved posts."
+                title="RedditSavedToYoutube", #Playlist title
+                description="Youtube videos found in your reddit saved posts." #Playlist description.
             ),
             status=dict(
-                privacyStatus="private"
+                privacyStatus="private" #Playlist privay settings.
             )
         )
     ).execute()
 
-    print("New playlist id: %s" % playlists_insert_response["id"])
+    #print("New playlist id: %s" % playlists_insert_response["id"])
 
 def read():
+    """
+    Read info from links.txt that is of the format title~|channel~|link.
+    Returns a 2d Array containing that info.
+    """
     videos=[]
     f=open('links.txt','r')
     for line in f:
@@ -72,6 +82,10 @@ def read():
     return videos #2D array  [[title,channel_name,link]]
 
 def havePlaylist(youtube):
+    """
+    Checks to see if you have a playlist titled 'RedditSavedToYoutube'.
+    Returns the unique id or false accordingly.
+    """
     results = youtube.playlists().list(part='snippet',mine=True).execute()
     for item in results['items']:
         if item['snippet']['title'] == 'RedditSavedToYoutube':
@@ -79,6 +93,9 @@ def havePlaylist(youtube):
     return False
 
 def videosInPlaylist(youtube,playlistID):
+    """
+    Finds all videos in the 'RedditSavedToYoutube' playlist. Trying to avoid duplicates.
+    """
     playlist_response = youtube.playlistItems().list(part='snippet',playlistId=playlistID,maxResults=50).execute()
     playlistVideoTitle = []
     playlist_response = dict(playlist_response)
@@ -87,11 +104,15 @@ def videosInPlaylist(youtube,playlistID):
     return playlistVideoTitle
     
 def addVideo(youtube,playlistID,videos):
+    """
+    Finds out which videos are in the playlist. Then searches youtube for each video that was in the links.txt.
+    Trys to match the channel name and video title for each video.
+    If the video is found, it is added to 'RedditSavedToYoutube' playlist.
+    """
     playlistVideos = videosInPlaylist(youtube,playlistID)
     for item in videos:
         videoTitle= item[0]
         videoAuthor=item[1]
-        print(videoTitle,'by',videoAuthor)
         search_response = youtube.search().list(q=videoTitle,part='id,snippet',type='video',maxResults=50).execute()
         for item in search_response['items']:
             if item['snippet']['title'] == videoTitle and item['snippet']['channelTitle']==videoAuthor:
@@ -102,15 +123,18 @@ def addVideo(youtube,playlistID,videos):
                     info={"snippet":{"playlistId":playlistID,"resourceId":{"channelId":channelID,"kind":kind,"videoId":videoID}}}
                     info2=json.dumps(info)
                     response = youtube.playlistItems().insert(part='snippet',body=json.loads(info2)).execute()
-                    print("Added the video")
 
 def main():
+    """
+    Logs into youtube.
+    Reads the info from links.txt.
+    Checks to see if 'RedditSavedToYoutube' playlist exists.
+        Creates it, if not.
+    Trys to add videos to playlist.
+    """
     youtube = youtubeLogin()
     videos = read()
     playlistID = havePlaylist(youtube)
-    print(playlistID)
-    print(videosInPlaylist(youtube,playlistID))
-    input()
     if not playlistID:
         createPlaylist(youtube)
         playlistID = havePlaylist(youtube)
