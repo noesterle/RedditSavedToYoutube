@@ -139,7 +139,9 @@ def main():
     videos = readLinks()
     login = readCreds()
     youtube = runBot(getPraw(login[0],login[1],login[2],login[3],login[4],login[5]))
-    youtube.extend(videos)
+    for item in videos:
+        if item not in youtube:
+            youtube.append(item)
     writeLinks(youtube)
     
 main()
