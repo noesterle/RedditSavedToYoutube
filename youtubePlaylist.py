@@ -9,7 +9,6 @@ from oauth2client.file import Storage
 from oauth2client.tools import argparser, run_flow
 import json
 
-#Youtube info. May need spaces before and after clientid and secret. Not sure yet.
 CLIENT_SECRETS_FILE = "client_secrets.json"
 MISSING_CLIENT_SECRETS_MESSAGE = """
 WARNING: Please configure OAuth 2.0
@@ -144,7 +143,7 @@ def main():
         addVideo(youtube,playlistID,videos)
     except Exception as err:
         f = open('err.txt','a')
-        f.write('Something went wrong.\n',err)
+        f.write('YOUTUBE:\nSomething went wrong.\n',err,'\n')
         f.close()
 
 main()

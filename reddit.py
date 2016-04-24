@@ -6,6 +6,9 @@ import time
 
 
 def getAccessToken(redditUsername,redditPassword,redditAppId,redditSecret,redirect,redditUser_agent):
+    """
+    Get a reddit access token.
+    """
     response = requests.post("https://www.reddit.com/api/v1/access_token",
       # client id and client secret are obtained via your reddit account
       auth = requests.auth.HTTPBasicAuth(redditAppId, redditSecret),
@@ -17,6 +20,9 @@ def getAccessToken(redditUsername,redditPassword,redditAppId,redditSecret,redire
     return response["access_token"]
 
 def getPraw(redditUsername,redditPassword,redditAppId,redditSecret,redirect,redditUser_agent):
+    """
+    Initializes object to interact with reddit.
+    """
         # you MUST provide custom User-Agent header in the request to play nicely with Reddit API guidelines
     r = praw.Reddit(user_agent = redditUser_agent,
         # client id and client secret are obtained via your reddit account
@@ -29,6 +35,10 @@ def getPraw(redditUsername,redditPassword,redditAppId,redditSecret,redirect,redd
     return r
 
 def runBot(r):
+    """
+    Access saved list.
+    Sort items into lists based on domain.
+    """
     countertotal = 0
     counterUnknown = 0
     youtube = []
@@ -63,29 +73,31 @@ def runBot(r):
                     unknown.append({x.title:x.url})   #Link is from an unknown service.
                     counterUnknown+=1
             countertotal+=1
-        print("Looked through",countertotal,"items in the saved list.",counterUnknown,"were not recorded.")
-        #    print(dir(x))
+        #print("Looked through",countertotal,"items in the saved list.",counterUnknown,"were not recorded.")
         return youtube
     except Exception as err:
-            # do some type of logging here
-            # it's better to do a named exception check in a real bots script
-        print("Something went wrong. :(")
-        print(err) 
-    #finally:
-            # wait some arbitrary amount of time before getting a refreshed access token
-    #    r = getPraw()
+        f = open('err.txt','a')
+        f.write("REDDIT:\nSomething went wrong.\n",err,'\n')  
+        f.close()
 
 def writeLinks(videos):
+    """
+    Write video info to file in form of title~|channel~|link.
+    """
     try:
         f = open('links.txt','w')
         for item in videos:
             f.write(item[0]+'~|'+item[1]+'~|'+item[2]+'\n')
         f.close()
     except Exception as err:
-        print("Something went wrong writing the links to file.")
-        print(err)
+        f = open('err.txt','a')
+        f.write("REDDIT:\nSomething went wrong writing the links to file.\n",err,'\n')
+        f.close()
 
 def readCreds():
+    """
+    Read credentials found in redditLogin.txt to log into reddit.
+    """
     try:
         login = []
         f = open('redditLogin.txt','r')
@@ -93,13 +105,16 @@ def readCreds():
             line=line.strip()
             login.append(line)
         f.close()
-        #print(login)
         return login
     except Exception as err:
-        print("Something went wrong with reading credentials.")
-        print(err)
+        f = open('err.txt','a')
+        f.write("REDDIT:\nSomething went wrong with reading credentials.\n",err,'\n')
+        f.close()
 
 def readLinks():
+    """
+    Read video info from file.
+    """
     try:
         youtubeList=[]
         f = open('links.txt','r')
@@ -109,10 +124,18 @@ def readLinks():
         f.close()
         return youtubeList
     except Exception as err:
-        print("Something went wrong with reading the links.")
-        print(err)
+        f = open('err.txt','a')
+        f.write("REDDIT:\nSomething went wrong with reading the links.\n",err,"\n")
+        f.close()
 
 def main():
+    """
+    Read video info from file.
+    Log into reddit.
+    Get and sort saved items.
+    Add new videos to the list.
+    Write new info to file.
+    """
     videos = readLinks()
     login = readCreds()
     youtube = runBot(getPraw(login[0],login[1],login[2],login[3],login[4],login[5]))
