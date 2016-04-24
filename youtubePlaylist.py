@@ -77,9 +77,17 @@ def havePlaylist(youtube):
         if item['snippet']['title'] == 'RedditSavedToYoutube':
             return item['id']
     return False
+
+def videosInPlaylist(youtube,playlistID):
+    playlist_response = youtube.playlistItems().list(part='snippet',playlistId=playlistID,maxResults=50).execute()
+    playlistVideoTitle = []
+    playlist_response = dict(playlist_response)
+    for item in playlist_response['items']:
+        playlistVideoTitle.append(item['snippet']['resourceId']['videoId'])
+    return playlistVideoTitle
     
 def addVideo(youtube,playlistID,videos):
-    counter = 0
+    playlistVideos = videosInPlaylist(youtube,playlistID)
     for item in videos:
         videoTitle= item[0]
         videoAuthor=item[1]
@@ -87,27 +95,25 @@ def addVideo(youtube,playlistID,videos):
         search_response = youtube.search().list(q=videoTitle,part='id,snippet',type='video',maxResults=50).execute()
         for item in search_response['items']:
             if item['snippet']['title'] == videoTitle and item['snippet']['channelTitle']==videoAuthor:
-                print("Found it!!",item['id']['videoId'])
                 videoID=item['id']['videoId']
                 kind=item['id']['kind']
                 channelID=item['snippet']['channelId']
-                print(videoID,kind,channelID)
-                counter+=1
-                #print(item)
-                #info=item['snippet']
-                info={'snippet':{'playlistId':playlistID,'resourceId':{'channelId':channelID,'kind':kind,'videoId':videoID}}}
-                #youtube.playlists().insert(part='snippet',request=info)
-                input()
-    print("Found",counter,'of',len(videos),'videos.')
+                if videoID not in playlistVideos:
+                    info={"snippet":{"playlistId":playlistID,"resourceId":{"channelId":channelID,"kind":kind,"videoId":videoID}}}
+                    info2=json.dumps(info)
+                    response = youtube.playlistItems().insert(part='snippet',body=json.loads(info2)).execute()
+                    print("Added the video")
 
 def main():
     youtube = youtubeLogin()
     videos = read()
-    addVideo(youtube,'',videos)
     playlistID = havePlaylist(youtube)
     print(playlistID)
-    #if not playlistID:
-    #    createPlaylist(youtube)
-    #    playlistID = havePlaylist(youtube)
-    
+    print(videosInPlaylist(youtube,playlistID))
+    input()
+    if not playlistID:
+        createPlaylist(youtube)
+        playlistID = havePlaylist(youtube)
+    addVideo(youtube,playlistID,videos)
+
 main()
