@@ -50,34 +50,35 @@ def runBot(r):
     try:
         authenticated_user = r.get_me() #get user
         #print (authenticated_user.name, authenticated_user.link_karma) #confirm user
-        saved = authenticated_user.get_saved(limit=50)#limit=2) #get saved list.
+        saved = authenticated_user.get_saved(limit=100)#limit=100) #get saved list.
         for x in saved:
-            if isinstance(x,praw.objects.Submission):  #Checks to see if x is a submission
-                if 'youtu' in x.domain:   #Checks to see if x is from youtube.com or shortened link youtu.be
+            if isinstance(x,praw.objects.Submission):  #Checks to see if x is a submissiona
+                #print(x.domain,x.title)
+                if 'youtube' in x.domain:   #Checks to see if x is from youtube.com or shortened link youtu.be
                     youtube.append([x.media['oembed']['title'],x.media['oembed']['author_name'],x.url])
-                    #x.unsave
+                    #x.unsave()
                 elif 'imgur' in x.domain:   #Checks to see if x is from imgur
                     imgur.append([x.title,x.url])
-                    #x.unsave
+                    #x.unsave()
                 elif 'ted' in x.domain: #Checks to see if x is from TED
                     ted.append([x.title,x.url])
-                    #x.unsave
+                    #x.unsave()
                 elif 'reddit' in x.domain or 'self.' in x.domain: #Checks to see if x is from Reddit
                     reddit.append([x.title,x.url])
-                    #x.unsave
+                    #x.unsave()
                 elif 'gfycat' in x.domain:  #Checks to see if x is from gfycat
                     gfycat.append([x.title,x.url])
-                    #x.unsave
+                    #x.unsave()
                 else:
                     #print(x.domain)
-                    unknown.append({x.title:x.url})   #Link is from an unknown service.
+                    unknown.append([x.title,x.url])   #Link is from an unknown service.
                     counterUnknown+=1
             countertotal+=1
         #print("Looked through",countertotal,"items in the saved list.",counterUnknown,"were not recorded.")
         return youtube
     except Exception as err:
         f = open('err.txt','a')
-        f.write("REDDIT:\nSomething went wrong.\n",err,'\n')  
+        f.write("REDDIT:\n"+time.asctime()+"\nSomething went wrong running the bot.\n"+str(err)+'\n')  
         f.close()
 
 def writeLinks(videos):
@@ -91,7 +92,7 @@ def writeLinks(videos):
         f.close()
     except Exception as err:
         f = open('err.txt','a')
-        f.write("REDDIT:\nSomething went wrong writing the links to file.\n",err,'\n')
+        f.write("REDDIT:\n"+time.asctime()+"\nSomething went wrong writing the links to file.\n",err,'\n')
         f.close()
 
 def readCreds():
@@ -108,7 +109,7 @@ def readCreds():
         return login
     except Exception as err:
         f = open('err.txt','a')
-        f.write("REDDIT:\nSomething went wrong with reading credentials.\n",err,'\n')
+        f.write("REDDIT:\n"+time.asctime()+"\nSomething went wrong with reading credentials.\n",err,'\n')
         f.close()
 
 def readLinks():
@@ -125,7 +126,7 @@ def readLinks():
         return youtubeList
     except Exception as err:
         f = open('err.txt','a')
-        f.write("REDDIT:\nSomething went wrong with reading the links.\n",err,"\n")
+        f.write("REDDIT:\n"+time.asctime()+"\nSomething went wrong with reading the links.\n"+err+"\n")
         f.close()
 
 def main():
@@ -139,9 +140,10 @@ def main():
     videos = readLinks()
     login = readCreds()
     youtube = runBot(getPraw(login[0],login[1],login[2],login[3],login[4],login[5]))
-    for item in videos:
-        if item not in youtube:
-            youtube.append(item)
-    writeLinks(youtube)
+    if len(youtube)>0:
+        for item in videos:
+            if item not in youtube:
+                youtube.append(item)
+        writeLinks(youtube)
     
 main()
