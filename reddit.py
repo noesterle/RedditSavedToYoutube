@@ -56,7 +56,7 @@ def runBot(r):
                 #print(x.domain,x.title)
                 if 'youtube' in x.domain:   #Checks to see if x is from youtube.com or shortened link youtu.be
                     youtube.append([x.media['oembed']['title'],x.media['oembed']['author_name'],x.url])
-                    #x.unsave()
+                    x.unsave()
                 elif 'imgur' in x.domain:   #Checks to see if x is from imgur
                     imgur.append([x.title,x.url])
                     #x.unsave()
@@ -139,11 +139,14 @@ def main():
     """
     videos = readLinks()
     login = readCreds()
+    print("Videos",len(videos))
     youtube = runBot(getPraw(login[0],login[1],login[2],login[3],login[4],login[5]))
+    print("Youtube",len(youtube))
     if len(youtube)>0:
         for item in videos:
             if item not in youtube:
                 youtube.append(item)
         writeLinks(youtube)
+    print("Videos and youtube", (len(youtube)))
     
 main()

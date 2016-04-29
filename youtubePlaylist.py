@@ -108,10 +108,11 @@ def addVideo(youtube,playlistID,videos):
     Trys to match the channel name and video title for each video.
     If the video is found, it is added to 'RedditSavedToYoutube' playlist.
     """
+    found=[]
     playlistVideos = videosInPlaylist(youtube,playlistID) #Unique id of vidoes in the playlist.
-    for item in videos:
-        videoTitle= item[0]
-        videoAuthor=item[1]
+    for item1 in videos:
+        videoTitle= item1[0]
+        videoAuthor=item1[1]
         search_response = youtube.search().list(q=videoTitle,part='id,snippet',type='video',maxResults=50).execute() #Search youtube, up to 50 videos in response.
         for item in search_response['items']:
             if item['snippet']['title'] == videoTitle and item['snippet']['channelTitle']==videoAuthor: #Check to see if this is the correct video.
@@ -122,6 +123,21 @@ def addVideo(youtube,playlistID,videos):
                     info={"snippet":{"playlistId":playlistID,"resourceId":{"channelId":channelID,"kind":kind,"videoId":videoID}}}
                     info2=json.dumps(info)
                     response = youtube.playlistItems().insert(part='snippet',body=json.loads(info2)).execute() #add it.
+                found.append(item1)
+    return found
+
+def writeLinks(videos):
+    try:
+        f = open('links.txt','w')
+        allvids=''
+        for video in videos:
+            allvids+=video[0]+'~|'+video[1]+'~|'+video[2]+'\n'
+        f.write(allvids)
+        f.close()
+    except Exception as err:
+        f = open('err.txt','a')
+        f.write("YOUTUBE:\nSomething went wrong writing links.\n"+err+'\n')
+        f.close()
 
 def main():
     """
@@ -140,10 +156,14 @@ def main():
         if not playlistID:
             createPlaylist(youtube)
             playlistID = havePlaylist(youtube)
-        addVideo(youtube,playlistID,videos)
+        found = addVideo(youtube,playlistID,videos)
+        for item in found: #Take out items that were found on youtube.
+            videos.remove(item)
+            print(len(videos))
+        writeLinks(videos) #Write videos that weren't found to file.
     except Exception as err:
         f = open('err.txt','a')
-        f.write('YOUTUBE:\nSomething went wrong.\n',err,'\n')
+        f.write('YOUTUBE:\nSomething went wrong.\n'+err+'\n')
         f.close()
 
 main()
