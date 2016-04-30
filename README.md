@@ -3,8 +3,8 @@
 This consists of two python scripts.
 
 The first script works using PRAW, which is Reddit's python API wrapper.
-The Reddit script first reads through a link.txt file for current youtube links. It then retrieves the first 25 items in your saved list, and finds the domain of the links. At the moment, it keeps track of youtube, imgur, gfycat, and TED links. Only the youtube videos are being used. It then writes to a link.txt in the same folder, using the format *title*~|*channel*~|*link*.
-The youtube file then reads the links.txt and log into youtube, and those videos to a playlist.
+The Reddit script first reads through a *link.txt* file for current youtube links. It then retrieves the first 100 items in your saved list, and finds the domain of the links. At the moment, it keeps track of youtube, imgur, gfycat, and TED links. Only the youtube videos are being used. It then writes to a *link.txt* in the same folder, using the format *title*~|*channel*~|*link*. Posts that are written to *links.txt* are unsaved from your reddit saved list.
+The youtube file then reads the *links.txt* and log into youtube, and those videos to a playlist. Videos that are found on youtube are removed from *link.txt*.
 
 I can't put youtu.be links in the playlist, as reddit doesn't store the proper information for me to find them with the youtube script. They will remain in the saved list.
 
