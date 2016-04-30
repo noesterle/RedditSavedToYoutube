@@ -139,14 +139,11 @@ def main():
     """
     videos = readLinks()
     login = readCreds()
-    print("Videos",len(videos))
     youtube = runBot(getPraw(login[0],login[1],login[2],login[3],login[4],login[5]))
-    print("Youtube",len(youtube))
     if len(youtube)>0:
         for item in videos:
             if item not in youtube:
                 youtube.append(item)
         writeLinks(youtube)
-    print("Videos and youtube", (len(youtube)))
     
 main()
